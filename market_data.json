@@ -1,0 +1,23 @@
+[
+  {"month": "2021-05", "beton": 400, "demir": 7000},
+  {"month": "2021-08", "beton": 450, "demir": 8000},
+  {"month": "2021-11", "beton": 500, "demir": 9500},
+  {"month": "2022-02", "beton": 600, "demir": 11000},
+  {"month": "2022-05", "beton": 800, "demir": 13000},
+  {"month": "2022-08", "beton": 1000, "demir": 14000},
+  {"month": "2022-11", "beton": 1200, "demir": 14500},
+  {"month": "2023-02", "beton": 1400, "demir": 15000},
+  {"month": "2023-05", "beton": 1500, "demir": 16000},
+  {"month": "2023-08", "beton": 1650, "demir": 17000},
+  {"month": "2023-11", "beton": 1800, "demir": 18500},
+  {"month": "2024-02", "beton": 1900, "demir": 19500},
+  {"month": "2024-05", "beton": 2000, "demir": 20000},
+  {"month": "2024-08", "beton": 2100, "demir": 21000},
+  {"month": "2024-11", "beton": 2200, "demir": 21500},
+  {"month": "2025-02", "beton": 2300, "demir": 22000},
+  {"month": "2025-05", "beton": 2400, "demir": 22500},
+  {"month": "2025-08", "beton": 2450, "demir": 22800},
+  {"month": "2025-11", "beton": 2500, "demir": 23000},
+  {"month": "2026-02", "beton": 2600, "demir": 23500},
+  {"month": "2026-05", "beton": 2700, "demir": 24000}
+]

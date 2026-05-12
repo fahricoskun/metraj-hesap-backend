@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+python-multipart
+ezdxf
+numpy
+supabase
+python-dotenv

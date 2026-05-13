@@ -42,41 +42,53 @@ def convert_dwg_to_dxf(dwg_content: bytes) -> bytes:
     converter_path = find_oda_converter()
     if not converter_path:
         raise EnvironmentError(
-            "ODA File Converter bulunamadı. Lütfen https://www.opendesign.com/guestfiles/oda_file_converter adresinden indirip kurunuz."
+            "DWG→DXF dönüşümü için ODA File Converter gereklidir. "
+            "Sunucuda kurulu değil — lütfen dosyayı .dxf olarak dışa aktarıp tekrar yükleyiniz."
         )
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        input_dir = os.path.join(temp_dir, "input")
-        output_dir = os.path.join(temp_dir, "output")
-        os.makedirs(input_dir)
-        os.makedirs(output_dir)
+    try:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            input_dir = os.path.join(temp_dir, "input")
+            output_dir = os.path.join(temp_dir, "output")
+            os.makedirs(input_dir)
+            os.makedirs(output_dir)
 
-        input_path = os.path.join(input_dir, "source.dwg")
-        with open(input_path, "wb") as f:
-            f.write(dwg_content)
+            input_path = os.path.join(input_dir, "source.dwg")
+            with open(input_path, "wb") as f:
+                f.write(dwg_content)
 
-        cmd = [
-            converter_path,
-            input_dir,
-            output_dir,
-            "ACAD2018",
-            "DXF",
-            "0", 
-            "0"  
-        ]
+            cmd = [
+                converter_path,
+                input_dir,
+                output_dir,
+                "ACAD2018",
+                "DXF",
+                "0",
+                "0"
+            ]
 
-        try:
-            subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            result = subprocess.run(
+                cmd,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=60,
+            )
             output_file = os.path.join(output_dir, "source.dxf")
-            
+
             if os.path.exists(output_file):
                 with open(output_file, "rb") as f:
                     return f.read()
             else:
-                raise Exception("Conversion failed: Output file not found.")
-                
-        except subprocess.CalledProcessError as e:
-            raise Exception(f"Conversion process failed: {e}")
+                raise RuntimeError(
+                    f"ODA dönüşümü tamamlandı fakat çıktı dosyası bulunamadı. "
+                    f"Stderr: {result.stderr.decode(errors='replace')[:200]}"
+                )
+
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"ODA dönüşüm süreci başarısız: {e.stderr.decode(errors='replace')[:200]}")
+    except subprocess.TimeoutExpired:
+        raise RuntimeError("DWG dönüşümü zaman aşımına uğradı (60 s). Dosya çok büyük olabilir.")
 
 def extract_layers(file_content: bytes, is_dwg: bool = False) -> List[str]:
     temp_dxf_path = None
@@ -253,7 +265,9 @@ def calculate_metrics_and_cost(file_content: bytes, layer_name: str, height: flo
     estimated_cost_tl = (volume_m3_with_fire * prices["beton"]) + (weight_ton_with_fire * prices["demir"])
 
     return {
+        # Birincil alan değerleri — frontend otomatik doldurma için her ikisi de sağlanır
         "area_m2": round(area_m2, 2),
+        "total_area": round(area_m2, 2),
         "volume_m3": round(volume_m3, 2),
         "weight_ton": round(weight_ton, 2),
         "raw_area": raw_area,
@@ -262,7 +276,7 @@ def calculate_metrics_and_cost(file_content: bytes, layer_name: str, height: flo
             "beton": "3%",
             "demir": "5%"
         },
-        "prices_used": prices, # Frontend'in tüm fiyatlara erişebilmesi için güncellendi
+        "prices_used": prices,
         "cad_geometry": {
             "target_polygons": layer_data["target_polygons"],
             "all_lines": layer_data["all_lines"],

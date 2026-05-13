@@ -77,12 +77,13 @@ async def get_layers(file: UploadFile = File(...)):
     
     try:
         layers = cad_service.extract_layers(content, is_dwg=is_dwg)
-        return {"layers": layers}
+        return {"layers": layers, "detected_layers": layers}
     except EnvironmentError as e:
-         return {
-             "warning": str(e),
-             "layers": []
-         }
+        return {
+            "warning": str(e),
+            "layers": [],
+            "detected_layers": [],
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -98,10 +99,13 @@ async def calculate_concrete(
     """
     content = await file.read()
     is_dwg = file.filename.lower().endswith('.dwg')
-    
+
     try:
         result = cad_service.calculate_metrics_and_cost(content, layer_name, height, unit=unit, is_dwg=is_dwg)
         return result
+    except EnvironmentError as e:
+        # ODA Converter eksik — 503 döndür, frontend kullanıcıya açıklayıcı mesaj gösterir
+        raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
